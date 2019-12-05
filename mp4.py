@@ -96,6 +96,7 @@ def noHidden():
 	loss_valid = [] 
 
 	learning_rate = 1e-3
+	
 	N = 10000 
 	loss_fn = torch.nn.CrossEntropyLoss()
 	optimizer = torch.optim.Adam(model_logreg.parameters(), lr=learning_rate)
@@ -199,5 +200,4 @@ def hidden():
 #	plt.suptitle('Weights from Inputs to Hidden Units')
 	plt.tight_layout(pad=0.1)
 	plt.show()
-
 # Part 7 -- he explained it but I wasn't paying attention rip
