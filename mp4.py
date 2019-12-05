@@ -7,17 +7,19 @@ from torch.autograd import Variable
 import torch
 
 imgList = os.listdir(path='./data/cropped64') # list of image names
+imgList.sort()
 images = []
+tags = []
 
 for image in imgList:
 	currMatrix = array(mpimg.imread('./data/cropped64/' + image)[:, :, :3])
-	# black - white is 000 to 255 255 255 so average
-	currMatrix = (currMatrix[:,:,0] + currMatrix[:,:,1] + currMatrix[:,:,2]) / 3
+	# black - white is 000 to 255 255 255 so average r g b
+	currMatrix = (currMatrix[:,:,0] + currMatrix[:,:,1] + currMatrix[:,:,2]) / 3.
 	images.append(currMatrix.flatten())
 
 images = array(images) # Part 1 and 2 -- list of grayscale images matrices (64 by 64)
 
-# FOR REPORT display a few images in subplot
+# FOR REPORT display a few images in subplot -- 4Angies.png
 # print 4 Angies in a 2 by 2
 def plot4Angies():
 	subplotList = ['0', '53', '100', '151']
@@ -30,7 +32,7 @@ def plot4Angies():
 
 # FOR REPORT: yeah prob registered
 
-# FOR REPORT example gray scale image
+# FOR REPORT example gray scale image -- grayAngie.png
 def plotExGrayscale():
 	exImag = array(mpimg.imread('./data/cropped64/AngieHarmon0.png')[:, :, :3])
 	exImag = (exImag[:,:,0] + exImag[:,:,1] + exImag[:,:,2]) / 3
@@ -49,7 +51,6 @@ tags.extend([2] * 119) # 'gerard'
 tags.extend([3] * 147) # 'lorraine'
 tags.extend([4] * 134) # 'michael'
 tags.extend([5] * 144) # 'peri'
-
 tags = array(tags)
 
 trainProp = 0.70
@@ -95,9 +96,9 @@ def noHidden():
 	loss_train = []
 	loss_valid = [] 
 
-	learning_rate = 1e-3
+	learning_rate = 1e-4
 	
-	N = 10000 
+	N = 2000 
 	loss_fn = torch.nn.CrossEntropyLoss()
 	optimizer = torch.optim.Adam(model_logreg.parameters(), lr=learning_rate)
 
@@ -114,7 +115,7 @@ def noHidden():
 	    loss.backward()   
 	    optimizer.step()   
 
-	# FOR REPORT learning curve -- uhh looks ok? a little funky at the end
+	# FOR REPORT learning curve -- noHidden_learn.png
 	plt.plot(range(N), loss_valid, color='b', label='validation')
 	plt.plot(range(N), loss_train, color='r', label='training')
 	plt.legend(loc='upper left')
@@ -125,7 +126,7 @@ def noHidden():
 
 	y_testpred = model_logreg(x_test).data.numpy()
 
-	# FOR REPORT accuracy on test set -- 0.1885245901639344 -- this ok ? rip 
+	# FOR REPORT accuracy on test set -- 0.811672131147541
 	print('accuracy on testing set: ', np.mean(np.argmax(y_testpred, 1) == test_y))
 
 	# # FOR REPORT? weights from first 10 inputs to each actor output
@@ -136,7 +137,7 @@ def noHidden():
 	# print(model_logreg[0].weight.data.numpy()[4, :10]) # 'michael'
 	# print(model_logreg[0].weight.data.numpy()[5, :10]) # 'peri'
 
-	# FOR REPORT plot of weights
+	# FOR REPORT plot of weights -- noHidden_weights.png
 	nameList= ['Angie Harmon', 'Daniel Radcliffe', 'Gerard Butler', 'Lorraine Bracco', 'Michael Vartan', 'Peri Gilpin']
 	for i in range(6):
 		plt.subplot(2, 3, i + 1)
@@ -157,9 +158,9 @@ def hidden():
 	loss_train = []
 	loss_valid = [] 
 
-	learning_rate = 1e-3
+	learning_rate = 1e-4
 
-	N = 10000 
+	N = 2000 
 	loss_fn = torch.nn.CrossEntropyLoss()
 	optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
@@ -176,7 +177,7 @@ def hidden():
 	    loss.backward()   
 	    optimizer.step()   
 
-	# FOR REPORT learning curve -- looks ok ? 
+	# FOR REPORT learning curve -- hidden_learn.png
 	plt.plot(range(N), loss_valid, color='b', label='validation')
 	plt.plot(range(N), loss_train, color='r', label='training')
 	plt.legend(loc='upper left')
@@ -187,10 +188,31 @@ def hidden():
 
 	y_testpred = model(x_test).data.numpy()
 
-	# FOR REPORT accuracy on test set -- 0.20491803278688525 -- rip idk
+	# FOR REPORT accuracy on test set -- 0.8278688524590164
 	print('accuracy on testing set: ', np.mean(np.argmax(y_testpred, 1) == test_y))
 
-	# FOR REPORT plot of weights
+	# FOR REPORT -- daniel_important.png
+	# 0.2660112 and 0.21285294 were the weights for unit 1 and 16, respectively
+	# top weights for daniel
+	weights = model[2].weight.data.numpy()[1, :] 
+	print(weights)
+	top = np.argsort(weights)[-1]
+	top2 = np.argsort(weights)[-2]
+	print(model[2].weight.data.numpy()[1, top])
+	print(model[2].weight.data.numpy()[1, top2])
+
+	plt.subplot(1, 2, 1)
+	plt.imshow(model[0].weight.data.numpy()[top, :].reshape((64, 64)), cmap='coolwarm')
+	plt.axis('off')
+	plt.title('Unit ' + str(top + 1))
+
+	plt.subplot(1, 2, 2)
+	plt.imshow(model[0].weight.data.numpy()[top2, :].reshape((64, 64)), cmap='coolwarm')
+	plt.axis('off')
+	plt.title('Unit ' + str(top2 + 1))
+	plt.show()
+
+	# FOR REPORT plot of weights -- hidden_weights.png
 	plt.rcParams.update({'font.size': 5})
 	for i in range(30):
 		plt.subplot(5, 6, i + 1)
@@ -200,6 +222,3 @@ def hidden():
 #	plt.suptitle('Weights from Inputs to Hidden Units')
 	plt.tight_layout(pad=0.1)
 	plt.show()
-
-noHidden()
-# Part 7 -- he explained it but I wasn't paying attention rip
