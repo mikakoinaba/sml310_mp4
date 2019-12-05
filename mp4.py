@@ -65,7 +65,7 @@ testIdx = idx[valNum:n] # 684 - 805
 train_x = images[trainIdx]
 train_y = tags[trainIdx]
 
-valid_x = images[tags[validIdx]]
+valid_x = images[validIdx]
 valid_y = tags[validIdx]
 
 test_x = images[testIdx]
@@ -200,4 +200,6 @@ def hidden():
 #	plt.suptitle('Weights from Inputs to Hidden Units')
 	plt.tight_layout(pad=0.1)
 	plt.show()
+
+noHidden()
 # Part 7 -- he explained it but I wasn't paying attention rip
